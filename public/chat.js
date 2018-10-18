@@ -1,20 +1,34 @@
 // Make connection
-var socket = io.connect('http://localhost:8080');
+let socket = io.connect('http://localhost:8080');
 
 // Query DOM
-var message = document.getElementById('message'),
+let message = document.getElementById('message'),
 	handle = document.getElementById('handle')
 	send = document.getElementById('send'),
 	clear = document.getElementById('clear'),
 	output = document.getElementById('output'),
-	feedback = document.getElementById('feedback');
+	feedback = document.getElementById('feedback'),
+	chatwindow = document.getElementById('chat-window');
 
-// Emit Events
+// Event Listeners
 send.addEventListener('click', () => {
 	socket.emit('chat', {
 		message: message.value,
 		handle: handle.value
 	})
+
+	message.value = '';
+})
+
+message.addEventListener('keydown', (event) => {
+	if(event.which === 13) {
+		socket.emit('chat', {
+			message: message.value,
+			handle: handle.value
+		})
+
+		message.value = '';
+	}
 })
 
 clear.addEventListener('click', () => {
@@ -31,6 +45,7 @@ message.addEventListener('keypress', () => {
 socket.on('chat', (data) => {
 	feedback.innerHTML = '';
 	output.innerHTML += `<p><strong>${data.handle}: </strong>${data.message}</p>`
+	scrollToBottom();
 })
 
 socket.on('typing', (data) => {
@@ -42,3 +57,13 @@ socket.on('output',(data) => {
 		output.innerHTML += `<p><strong>${ele.handle}: </strong>${ele.message}</p>`
 	})
 });
+
+socket.on('clear', () => {
+	console.log('test');
+	output.innerHTML = '';
+});
+
+// Auto scroll to bottom
+function scrollToBottom() {
+	chatwindow.scrollTop = chatwindow.scrollHeight;
+}
